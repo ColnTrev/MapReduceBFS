@@ -18,11 +18,11 @@ import java.io.IOException;
 public class BFS {
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
         Job job1, job2; // we need three different jobs for this task
-        String edgeOutput = "/triangles/edgeResult";
-        String triangleOutput = "/triangles/triangleResult";
-        String finalOutput = "/triangles/finalOutput";
+        String edgeOutput = "/bfs/graphReader";
+        String triangleOutput = "/bfs/bfsResult";
         Configuration conf = new Configuration();
-
+        conf.set("sourceId", args[1]);
+        conf.set("targetId", args[2]);
         job1 = Job.getInstance(conf);
         job1.setJobName("Graph Reader");
         job1.setMapOutputKeyClass(Text.class);
