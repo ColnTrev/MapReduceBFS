@@ -14,7 +14,7 @@ public class BFSMapper extends Mapper<LongWritable, Text,Text,Text> {
     @Override
     protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
 
-        String[] valueAsArray = value.toString().split(",");
+        String[] valueAsArray = value.toString().split(" ");
         String node = valueAsArray[0];
         String[] rest = valueAsArray[1].split(";");
         String connections = rest[0];

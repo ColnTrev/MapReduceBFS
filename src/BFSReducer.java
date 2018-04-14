@@ -1,6 +1,4 @@
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Cluster;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import java.io.IOException;
@@ -20,11 +18,11 @@ public class BFSReducer extends Reducer<Text, Text, Text, Text> {
         Integer dist = Integer.MAX_VALUE;
         String stat = "WHITE";
             for(Text value : values){
-                if(value.toString().equals("FOUND")){
+                if(value.toString().equals("FOUND") || context.getCounter(Counter.FINISHED).getValue() > 0){
                     context.getCounter(Counter.FINISHED).increment(1);
                     return;
                 }
-                String[] tokens = value.toString().split(",");
+                String[] tokens = value.toString().split(";");
                 Integer distance = Integer.parseInt(tokens[1]);
                 if(distance < dist){
                     dist = distance;

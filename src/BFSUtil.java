@@ -4,7 +4,7 @@
 public class BFSUtil {
     public static String output(String connections, Integer distance, String status){
         StringBuilder sb = new StringBuilder();
-        char delimiter = ',';
+        char delimiter = ';';
         sb.append(connections);
         sb.append(delimiter);
         sb.append(distance.toString());
