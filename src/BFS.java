@@ -1,4 +1,5 @@
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
@@ -17,12 +18,14 @@ import java.io.IOException;
  */
 public class BFS {
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
+        int iteration = 1;
         Job job1, job2; // we need three different jobs for this task
-        String edgeOutput = "/bfs/graphReader";
-        String triangleOutput = "/bfs/bfsResult";
+        String edgeOutput = "hdfs:///user/bfs/graphReader";
+        String triangleOutput = "hdfs:///user/bfs/bfsResult_1";
         Configuration conf = new Configuration();
-        conf.set("sourceId", args[1]);
-        conf.set("targetId", args[2]);
+        conf.set("sourceId", "1");
+        conf.set("targetId", "1000");
+
         job1 = Job.getInstance(conf);
         job1.setJobName("Graph Reader");
         job1.setMapOutputKeyClass(Text.class);
@@ -34,11 +37,11 @@ public class BFS {
         job1.setJarByClass(BFS.class);
         job1.setMapperClass(GraphReadMapper.class);
         job1.setReducerClass(GraphReadReducer.class);
-        FileInputFormat.addInputPath(job1, new Path(args[0]));
+        FileInputFormat.addInputPath(job1, new Path("hdfs:///user/bfsdata.txt"));
         FileOutputFormat.setOutputPath(job1, new Path(edgeOutput));
 
         job2 = Job.getInstance(conf);
-        job2.setJobName("Breadth First Search");
+        job2.setJobName("Breadth First Search" + iteration);
         job2.setMapOutputKeyClass(Text.class);
         job2.setMapOutputValueClass(Text.class);
         job2.setOutputKeyClass(Text.class);
@@ -48,13 +51,56 @@ public class BFS {
         job2.setJarByClass(BFS.class);
         job2.setMapperClass(BFSMapper.class);
         job2.setReducerClass(BFSReducer.class);
+
+        Path in;
+        Path out = new Path("hdfs:///user/bfs/bfsResult_1/");
+        FileSystem fs = FileSystem.get(conf);
+        if(fs.exists(out)){
+            fs.delete(out,true);
+        }
         FileInputFormat.addInputPath(job2, new Path(edgeOutput));
-        FileOutputFormat.setOutputPath(job2, new Path(triangleOutput));
+        FileOutputFormat.setOutputPath(job2, out);
+
+        long startTime = System.currentTimeMillis();
         int result = job1.waitForCompletion(true)? 0 : 1;
         if(result == 0){
-            result = job2.waitForCompletion(true)? 0 : 1;
-        }
+            job2.waitForCompletion(true);
+            iteration++;
+            long finished = job2.getCounters().findCounter(BFSReducer.Counter.FINISHED).getValue();
+            while(finished == 0){
+                conf = new Configuration();
 
+                conf.set("sourceId", "1");
+                conf.set("targetId", "1000");
+                job2 = Job.getInstance(conf);
+                job2.setJobName("BFS " + iteration);
+                job2.setJarByClass(BFS.class);
+                job2.setMapperClass(BFSMapper.class);
+                job2.setReducerClass(BFSReducer.class);
+
+                in = new Path("hdfs:///user/bfs/bfsResult_" + (iteration - 1) + "/");
+                out = new Path("hdfs:///user/bfs/bfsResult_" + iteration + "/");
+
+                FileInputFormat.addInputPath(job2, in);
+
+                if(fs.exists(out)){
+                    fs.delete(out,true);
+                }
+
+                FileOutputFormat.setOutputPath(job2,out);
+                job2.setInputFormatClass(TextInputFormat.class);
+                job2.setOutputFormatClass(TextOutputFormat.class);
+
+                job2.setOutputKeyClass(Text.class);
+                job2.setOutputValueClass(Text.class);
+
+                job2.waitForCompletion(true);
+                iteration++;
+                finished = job2.getCounters().findCounter(BFSReducer.Counter.FINISHED).getValue();
+            }
+        }
+        long endTime = System.currentTimeMillis();
+        System.out.println("Elapsed Time: " + (endTime - startTime));
         System.exit(result);
     }
 }

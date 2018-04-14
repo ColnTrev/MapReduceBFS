@@ -1,3 +1,4 @@
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
@@ -6,9 +7,9 @@ import java.io.IOException;
 /**
  * Created by colntrev on 4/4/18.
  */
-public class GraphReadMapper extends Mapper<Text,Text,Text,Text> {
+public class GraphReadMapper extends Mapper<LongWritable,Text,Text,Text> {
     @Override
-    protected void map(Text key, Text value, Context context) throws IOException, InterruptedException {
+    protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
         String[] tokens = value.toString().split(";");
         String node = tokens[0];
         Integer distance = Integer.MAX_VALUE;
