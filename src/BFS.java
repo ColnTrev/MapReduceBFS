@@ -19,12 +19,12 @@ import java.io.IOException;
 public class BFS {
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
         int iteration = 1;
+
         Job job1, job2; // we need three different jobs for this task
         String edgeOutput = "hdfs:///user/bfs/graphReader";
         String triangleOutput = "hdfs:///user/bfs/bfsResult_1";
         Configuration conf = new Configuration();
         conf.set("sourceId", "1");
-        conf.set("targetId", "1000");
 
         job1 = Job.getInstance(conf);
         job1.setJobName("Graph Reader");
@@ -67,11 +67,10 @@ public class BFS {
             job2.waitForCompletion(true);
             iteration++;
             long finished = job2.getCounters().findCounter(BFSReducer.Counter.FINISHED).getValue();
-            while(finished == 0){
+            while(finished > 0){
                 conf = new Configuration();
 
                 conf.set("sourceId", "1");
-                conf.set("targetId", "1000");
                 job2 = Job.getInstance(conf);
                 job2.setJobName("BFS " + iteration);
                 job2.setJarByClass(BFS.class);
@@ -97,10 +96,13 @@ public class BFS {
                 job2.waitForCompletion(true);
                 iteration++;
                 finished = job2.getCounters().findCounter(BFSReducer.Counter.FINISHED).getValue();
+                System.out.println("COUNTER STATUS: " + finished);
             }
+            System.out.println(finished);
         }
         long endTime = System.currentTimeMillis();
         System.out.println("Elapsed Time: " + (endTime - startTime));
+
         System.exit(result);
     }
 }

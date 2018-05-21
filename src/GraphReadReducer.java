@@ -10,7 +10,11 @@ public class GraphReadReducer extends Reducer<Text,Text,Text,Text> {
     @Override
     protected void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
         for(Text value : values){
-            context.write(key, value);
+            StringBuilder sb = new StringBuilder();
+            sb.append(key.toString());
+            sb.append(';');
+            sb.append(value);
+            context.write(null,new Text(sb.toString()));
         }
     }
 }

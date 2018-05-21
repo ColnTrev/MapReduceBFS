@@ -16,14 +16,14 @@ public class BFSUtil {
         if(!s1.equals("WHITE") && s2.equals("WHITE")){
             return s1;
         }
-        if(s1.equals("WHITE") && s2.equals("WHITE")){
+        if(s1.equals("WHITE") && !s2.equals("WHITE")){
             return s2;
         }
         if(s1.equals("GREY") && s2.equals("BLACK")){
-            return s1;
+            return s2;
         }
         if(s1.equals("BLACK") && s2.equals("GREY")){
-            return s2;
+            return s1;
         }
         return s1;
     }

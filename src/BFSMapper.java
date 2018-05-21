@@ -13,23 +13,18 @@ public class BFSMapper extends Mapper<LongWritable, Text,Text,Text> {
     }
     @Override
     protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
+        String[] valueAsArray = value.toString().split(";");
 
-        String[] valueAsArray = value.toString().split(" ");
         String node = valueAsArray[0];
-        String[] rest = valueAsArray[1].split(";");
-        String connections = rest[0];
-        Integer distance = Integer.parseInt(rest[1]);
-        String status = rest[2];
+        String connections = valueAsArray[1];
+        Integer distance = Integer.parseInt(valueAsArray[2]);
+        String status = valueAsArray[3];
         if(status.equals("GREY")) {
             String[] cons = connections.split(",");
             for (String connection : cons) {
                 String nextNode = connection;
                 Integer nextDistance = distance + 1;
                 String nextStatus = "GREY";
-                if (nextNode.equals(context.getConfiguration().get("targetId"))) {
-                    context.write(new Text(nextNode), new Text("FOUND"));
-                    return;
-                }
                 String output = BFSUtil.output("No Connection", nextDistance, nextStatus);
                 context.write(new Text(nextNode), new Text(output));
             }

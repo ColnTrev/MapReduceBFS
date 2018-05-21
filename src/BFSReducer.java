@@ -18,20 +18,25 @@ public class BFSReducer extends Reducer<Text, Text, Text, Text> {
         Integer dist = Integer.MAX_VALUE;
         String stat = "WHITE";
             for(Text value : values){
-                if(value.toString().equals("FOUND") || context.getCounter(Counter.FINISHED).getValue() > 0){
-                    context.getCounter(Counter.FINISHED).increment(1);
-                    return;
-                }
                 String[] tokens = value.toString().split(";");
+
                 Integer distance = Integer.parseInt(tokens[1]);
+
+                if(!tokens[0].equals("No Connection")){
+                    cons = tokens[0];
+                }
                 if(distance < dist){
                     dist = distance;
-                    cons = tokens[0];
-                    stat = BFSUtil.checkStatus(stat, tokens[2]);
                 }
+                stat = BFSUtil.checkStatus(tokens[2],stat);
+            }
+            System.out.println("*******REDUCER OUTPUT**********");
+            if(stat.equals("GREY")){
+                context.getCounter(Counter.FINISHED).increment(1);
             }
         String outputString = BFSUtil.output(cons, dist, stat);
-        context.write(key, new Text(outputString));
+            System.out.println(key + ";" + outputString);
+        context.write(null, new Text(key + ";" + outputString));
     }
 
 
